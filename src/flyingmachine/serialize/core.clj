@@ -1,4 +1,4 @@
-(ns flyingmachine/serialize.core)
+(ns flyingmachine.serialize.core)
 
 (declare serialize)
 
@@ -34,7 +34,7 @@ Retriever is the function that will be applied to the entity"
      (let [seed# {:attributes {} :relationships {}}]
        (reduce (fn [result# [fun# & args#]]
                  (let [tomerge# (apply (resolve fun#) args#)
-                       destination# (if (= "attr" (str fun#)) :attributes :relationships)]
+                       destination# (if (:serializer (first (vals tomerge#))) :relationships :attributes)]
                    (update-in result# [destination#] merge tomerge#)))
                seed#
                (quote [~@fields])))))

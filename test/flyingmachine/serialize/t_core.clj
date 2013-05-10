@@ -1,15 +1,34 @@
-(ns flyingmachine/serialize.t-core
+(ns flyingmachine.serialize.t-core
   (:use midje.sweet)
-  (:use [flyingmachine/serialize.core]))
+  (:require [flyingmachine.serialize.core :as c]))
 
-(facts "about `defserialize`"
-  (fact "it normally returns the first element"
-    (first-element [1 2 3] :default) => 1
-    (first-element '(1 2 3) :default) => 1)
+(def t1 {:topic/title "First topic"
+         :db/id 100})
 
-  ;; I'm a little unsure how Clojure types map onto the Lisp I'm used to.
-  (fact "default value is returned for empty sequences"
-    (first-element [] :default) => :default
-    (first-element '() :default) => :default
-    (first-element nil :default) => :default
-    (first-element (filter even? [1 3 5]) :default) => :default))
+(def posts
+  [{:post/content "T1 First post content"
+    :post/topic t1
+    :db/id 101}
+   {:post/content "T1 Second post content"
+    :post/topic t1
+    :db/id 102}])
+
+(c/defserializer ent->post
+  (c/attr :id :db/id)
+  (c/attr :content :post/content)
+  ;; notice that that the second value of attr can be any function
+  (c/attr :topic-id (comp :db/id :post/topic))
+  (c/has-one :topic
+             :serializer flyingmachine.serialize.t-core/ent->topic
+             :retriever :post/topic))
+
+(c/defserializer ent->topic
+  (c/attr :id :db/id)
+  (c/attr :title :topic/title)
+  (c/has-many :posts
+              :serializer flyingmachine.serialize.t-core/ent->post
+              :retriever (fn [_] posts)))
+
+(fact ""
+  (c/serialize t1 ent->topic) => {:id 100 :title "First topic"})
+
