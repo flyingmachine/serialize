@@ -1,6 +1,6 @@
-# flyingmachine/serialize
+# flyingmachine.serialize
 
-`flyingmachine/serialize` allows you to define rules for converting
+`flyingmachine.serialize` allows you to define rules for converting
 source entities into maps. My primary use case for it is converting
 Datomic entities, though I'm sure you will probably find it useful
 in pretty much every line of code you write.
