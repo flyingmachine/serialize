@@ -29,6 +29,28 @@
               :serializer flyingmachine.serialize.t-core/ent->post
               :retriever (fn [_] posts)))
 
-(fact ""
-  (c/serialize t1 ent->topic) => {:id 100 :title "First topic"})
+(fact "serialize does not include relationships by default"
+  (let [serialization (c/serialize t1 ent->topic)]
+    serialization => (just {:id 100 :title "First topic"})))
 
+(fact "serialize lets you include relationships"
+  (let [t-posts (:posts (c/serialize t1 ent->topic {:include :posts}))]
+    (count t-posts) => 2
+    t-posts => (contains (map #(c/serialize % ent->post) posts))))
+
+(fact "serialize lets you exclude attributes"
+  (c/serialize t1 ent->topic {:exclude [:id]}) =not=> :id)
+
+(fact "you can exclude attributes of relationships"
+  (let [t-posts (:posts (c/serialize t1 ent->topic {:include {:posts {:exclude [:id :topic-id]}}}))]
+    (count t-posts) => 2
+    t-posts => (contains {:content "T1 First post content"})
+    t-posts => (contains {:content "T1 Second post content"})))
+
+(fact "you can include relationships of relationships"
+  (let [topic (c/serialize t1 ent->topic {:include {:posts {:exclude [:id :topic-id :content]
+                                                            :include :topic}}})
+        t-posts (:posts topic)
+        p-topic (select-keys topic [:id :title])]
+    (count t-posts) => 2
+    t-posts => (contains {:topic p-topic})))

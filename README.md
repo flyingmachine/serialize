@@ -41,7 +41,8 @@ with ID -100". In the case of -100, it's referring to the first topic.
 We'll be working with the following serializers:
 
 ```clojure
-(ns example.serializers)
+(ns example.serializers
+  (:use flyingmachine.serialize.core))
 (defserializer ent->post
   (attr :id :db/id)
   (attr :content :post/content)
@@ -125,3 +126,27 @@ Below are some ways you could serialize the data. Assume that
 ```
 
 I hope this gives you an idea of how to use this library!
+
+## Behind the Scenes
+
+`defserializer` is just a macro that lets you define a data structure
+in a manner that's more readable. The end result is a map, like this
+one:
+
+```clojure
+{:attributes {:title :topic/title, :id :db/id},
+ :relationships
+ {:posts
+  {:retriever #(datomic-magic/all [:post/topic (:db/id %)]),
+   :serializer example.serializers/ent->post,
+   :arity :many}}}
+```
+
+Knowing that, you could use modify the "serializer" however you want.
+For example, if you wanted to add 1 to the id, you could do something like
+
+```clojure
+(serialize t1 (assoc-in ent->topic [:attributes :id] #(inc (:db/id %))))
+```
+
+Isn't that just magical?
