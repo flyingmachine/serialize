@@ -66,20 +66,20 @@ Below are some ways you could serialize the data. Assume that
 ```clojure
 => (use 'flyingmachine.serialize.core)
 
-=> (def t1 (datomic-magic/one :topic/title "First topic"))
 ;; assign the first topic entity to t1
+=> (def t1 (datomic-magic/one :topic/title "First topic"))
 
-=> (serialize t1 example.serializers/ent->topic)
 ;; Notice that posts aren't included. This is because relationships
 ;; aren't included by default. Notice also that the id bears no
 ;; relation to the temporary Datomic ID above.
+=> (serialize t1 example.serializers/ent->topic)
 {:id 1000
  :title "First Topic"}
 
 
-=> (serialize t1 example.serializers/ent->topic {:include :posts})
 ;; When we :include a relationship, it's included in the result. Hey,
 ;; how bout that wow
+=> (serialize t1 example.serializers/ent->topic {:include :posts})
 {:id 1000
  :title "First Post"
  :posts [{:id 1001
@@ -87,8 +87,9 @@ Below are some ways you could serialize the data. Assume that
          {:id 1002
           :content "T1 Second post content"}]}
 
-=> (serialize t1 example.serializers/ent->topic {:include [:posts]})
+
 ;; You can also specify a vector or list of keys to include
+=> (serialize t1 example.serializers/ent->topic {:include [:posts]})
 {:id 1000
  :title "First Post"
  :posts [{:id 1001
@@ -96,28 +97,31 @@ Below are some ways you could serialize the data. Assume that
          {:id 1002
           :content "T1 Second post content"}]}
 
+
+;; Ugh I'm tired of looking at post ids please exclude them
 => (serialize t1 example.serializers/ent->topic {:include
                                                   {:posts {:exclude [:id]}}})
-;; Ugh I'm tired of looking at post ids please exclude them
 {:id 1000
  :title "First Post"
  :posts [{:content "T1 First post content"}
          {:content "T1 Second post content"}]}
 
+
+;; Please don't show me the topic id either, geeze
 => (serialize t1 example.serializers/ent->topic {:exclude [:id]
                                                   :include
                                                   {:posts {:exclude [:id]}}})
-;; Please don't show me the topic id either, geeze
 {:title "First Post"
  :posts [{:content "T1 First post content"}
          {:content "T1 Second post content"}]}
 
+
+;; For some completely legitimate reason, I want to include the topic
+;; for each post
 => (serialize t1 example.serializers/ent->topic {:exclude [:id]
                                                   :include
                                                   {:posts {:exclude [:id]
                                                            :include :topic}}})
-;; For some completely legitimate reason, I want to include the topic
-;; for each post
 {:title "First Post"
  :posts [{:content "T1 First post content"
           :topic {:id 1000 :title "First Post"}}
