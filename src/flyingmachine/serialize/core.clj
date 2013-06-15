@@ -45,7 +45,9 @@ Retriever is the function that will be applied to the entity"
 
 (defn apply-options-to-attributes
   [attributes options]
-  (apply dissoc attributes (:exclude options)))
+  (if-let [only (:only options)]
+    (select-keys attributes only)
+    (apply dissoc attributes (:exclude options))))
 
 (defn serialize-attributes
   [entity attributes options]

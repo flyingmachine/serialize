@@ -39,10 +39,19 @@
     t-posts => (contains (map #(c/serialize % ent->post) posts))))
 
 (fact "serialize lets you exclude attributes"
-  (c/serialize t1 ent->topic {:exclude [:id]}) =not=> :id)
+  (c/serialize t1 ent->topic {:exclude [:id]}) =not=> (contains {:id 100}))
 
 (fact "you can exclude attributes of relationships"
   (let [t-posts (:posts (c/serialize t1 ent->topic {:include {:posts {:exclude [:id :topic-id]}}}))]
+    (count t-posts) => 2
+    t-posts => (contains {:content "T1 First post content"})
+    t-posts => (contains {:content "T1 Second post content"})))
+
+(fact "you can exclude all attributes except those specified with :only"
+  (c/serialize t1 ent->topic {:only [:id]}) => (just {:id 100}))
+
+(fact "you can use :only in relationships"
+  (let [t-posts (:posts (c/serialize t1 ent->topic {:include {:posts {:only [:content]}}}))]
     (count t-posts) => 2
     t-posts => (contains {:content "T1 First post content"})
     t-posts => (contains {:content "T1 Second post content"})))

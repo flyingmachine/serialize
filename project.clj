@@ -1,4 +1,4 @@
-(defproject flyingmachine/serialize "0.1.0"
+(defproject flyingmachine/serialize "0.1.1"
   :description "Define rules for serializing entities"
   :dependencies [[org.clojure/clojure "1.4.0"]]
   :profiles {:dev {:dependencies [[midje "1.5.0"]]}}
